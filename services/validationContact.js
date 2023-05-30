@@ -1,4 +1,4 @@
-const schemaValidation = require("./contacts");
+const schemaValidation = require("./schemaValidation");
 
 const createTextErrorValidation = (error) => {
   const message = error.details.reduce(
