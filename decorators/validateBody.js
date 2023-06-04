@@ -7,7 +7,8 @@ const validateBody = (schema) => {
       next(HttpError(400, error.message));
     }
     next(error);
-  };
+  }
   return fn;
-};
+}
+
 module.exports = validateBody;

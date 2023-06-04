@@ -3,7 +3,7 @@ const router = express.Router();
 const contactsController = require("../../controllers/contacts-controller");
 const schemas = require("../../schemas");
 const {validateBody} = require("../../decorators")
-
+const {validateRequestBody} = require("../../helpers");
 
 
 router.get("/", contactsController.getAllContacts);
@@ -14,6 +14,6 @@ router.post("/", validateBody(schemas.contactAddSchema), contactsController.addC
 
 router.delete("/:id", contactsController.deleteContactById);
 
-router.put("/:id",validateBody(schemas.contactAddSchema), contactsController.updateContactById);
+router.put("/:id",validateRequestBody, validateBody(schemas.contactAddSchema), contactsController.updateContactById);
 
 module.exports = router;
