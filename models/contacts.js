@@ -44,16 +44,15 @@ const removeContact = async (contactId) => {
   await updateContact(newContacts);
 };
 
-const addContact = async ({ name, email, phone }) => {
+const addContact = async (contactBody) => {
   const contacts = await listContacts();
   const newContact = {
     id: nanoid(),
-    name,
-    email,
-    phone,
+    ...contactBody,
   };
   contacts.push(newContact);
   await updateContact(contacts);
+  return newContact;
 };
 
 module.exports = {

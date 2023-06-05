@@ -10,7 +10,7 @@ router.get("/", contactsController.getAllContacts);
 
 router.get("/:id", contactsController.getContactById);
 
-router.post("/", validateBody(schemas.contactAddSchema), contactsController.addContact);
+router.post("/",validateRequestBody, validateBody(schemas.contactAddSchema), contactsController.addContact);
 
 router.delete("/:id", contactsController.deleteContactById);
 
