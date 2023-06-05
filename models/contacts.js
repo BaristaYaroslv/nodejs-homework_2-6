@@ -42,6 +42,7 @@ const removeContact = async (contactId) => {
   const newContacts = contacts.filter(({ id }) => id !== contactId);
 
   await updateContact(newContacts);
+  return newContacts;
 };
 
 const addContact = async (contactBody) => {
