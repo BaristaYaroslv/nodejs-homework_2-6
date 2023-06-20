@@ -1,5 +1,5 @@
 const express = require("express");
-const ctrl = require("../../controllers/auth");
+const authController = require("../../controllers/auth");
 const {
 	validateBody,
 	authenticate,
@@ -9,20 +9,20 @@ const { schemas } = require("../../models/user");
 
 const router = express.Router();
 
-router.post("/register", validateBody(schemas.registerSchema), ctrl.register);
+router.post("/register", validateBody(schemas.registerSchema), authController.register);
 
-router.post("/login", validateBody(schemas.loginSchema), ctrl.login);
+router.post("/login", validateBody(schemas.loginSchema), authController.login);
 
-router.get("/current", authenticate, ctrl.getCurrent);
+router.get("/current", authenticate, authController.getCurrent);
 
-router.post("/logout", authenticate, ctrl.logout);
+router.post("/logout", authenticate, authController.logout);
 
 router.patch(
 	"/:userId/subscription",
 	authenticate,
 	isValidId,
 	validateBody(schemas.updateSubscriptionSchema),
-	ctrl.updateSubscriptionUser
+	authController.updateSubscriptionUser
 );
 
 module.exports = router;

@@ -16,8 +16,12 @@ const register = async (req, res) => {
 	const hashPassword = await bcrypt.hash(password, 10);
 
 	const newUser = await User.create({ ...req.body, password: hashPassword });
+
 	res.status(201).json({
-		user: { email: newUser.email, subscription: newUser.subscription },
+		user: {
+			email: newUser.email,
+			subscription: newUser.subscription
+		}
 	});
 };
 
@@ -56,12 +60,19 @@ const getCurrent = async (req, res) => {
 const logout = async (req, res) => {
 	const { _id } = req.user;
 	await User.findByIdAndUpdate(_id, { token: "" });
-
-	res.status(204).json();
+	    res.status(204).json({
+        message: "Logout success"
+    })
 };
 
 const updateSubscriptionUser = async (req, res) => {
 	const { userId } = req.params;
+    const { subscription } = req.body;
+
+        if (!['starter', 'pro', 'business'].includes(subscription)) {
+        throw HttpError(400, "Invalid subscription value");
+    }
+
 	const result = await User.findByIdAndUpdate(userId, req.body, {
 		new: true,
 	});

@@ -2,8 +2,24 @@ const {Contact} = require("../models/contact");
 const { HttpError, ctrlWrapper } = require("../helpers");
 
 const listContacts = async (req, res) => {
-	const result = await Contact.find({},"-createdAt -updatedAt");
-	res.json(result);
+	const { _id: owner } = req.user;
+
+	const { page = 1, limit = 20, favorite } = req.query;
+
+	const skip = (page - 1) * limit;
+	const result = await Contact.find({ owner }, "-createdAt -updatedAt", {
+		skip,
+		limit,
+	}).populate("owner", "name email");
+
+	if (favorite) {
+		const filteredResult = result.filter((item) => {
+			return item.favorite === Boolean(favorite);
+		});
+		res.json(filteredResult);
+	} else {
+		res.json(result);
+	}
 };
 
 const getContactById = async (req, res) => {
@@ -17,7 +33,8 @@ const getContactById = async (req, res) => {
 };
 
 const addContact = async (req, res) => {
-	const result = await Contact.create(req.body);
+	const { _id: owner } = req.user;
+	const result = await Contact.create({ ...req.body, owner });
 	res.status(201).json(result);
 };
 
@@ -33,7 +50,7 @@ const changeContact = async (req, res) => {
 const updateStatusContact = async (req, res) => {
 	const { contactId } = req.params;
 	const result = await Contact.findByIdAndUpdate(contactId, req.body, {new: true});
-	// console.log("updateStatusContact >> result:", result);
+	
 	if (!result) {
 		throw HttpError(404, "Not Found");
 	}
