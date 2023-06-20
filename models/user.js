@@ -3,12 +3,12 @@ const { handleMongooseError } = require("../helpers");
 const Joi = require("joi");
 
 const emailRageXP = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+const subscriptionTypes = ["starter", "pro", "business"];
 
 const userSchema = new Schema(
 	{
 		name: {
 			type: String,
-			required: true,
 		},
 		password: {
 			type: String,
@@ -28,7 +28,7 @@ const userSchema = new Schema(
 		},
 		token: {
 			type: String,
-			default: "",
+			default: null,
 		},
 	},
 	{
@@ -41,8 +41,9 @@ userSchema.post("save", handleMongooseError);
 const User = model("user", userSchema);
 
 const registerSchema = Joi.object({
-	password: Joi.string().min(6).required(),
+	name: Joi.string(),
 	email: Joi.string().pattern(emailRageXP).required(),
+	password: Joi.string().min(6).required(),
 	subscription: Joi.string()
 });
 
@@ -52,7 +53,7 @@ const loginSchema = Joi.object({
 });
 
 const updateSubscriptionSchema = Joi.object({
-	subscription: Joi.string().valid("starter", "pro", "business").required(),
+	subscription: Joi.string().valid(...subscriptionTypes).required()
 });
 
 const schemas = {
