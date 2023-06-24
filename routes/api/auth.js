@@ -3,8 +3,12 @@ const ctrl = require("../../controllers/auth");
 const {
 	validateBody,
 	authenticate,
+	upload,
+	resizeAvatar,
+	validateFile,
 	isValidId,
 } = require("../../middleWares");
+
 const { schemas } = require("../../models/user");
 
 const router = express.Router();
@@ -23,6 +27,15 @@ router.patch(
 	isValidId,
 	validateBody(schemas.updateSubscriptionSchema),
 	ctrl.updateSubscriptionUser
+);
+
+router.patch(
+  "/avatars",
+  authenticate,
+  upload.single("avatar"),
+  validateFile(),
+  resizeAvatar,
+  ctrl.changeAvatar
 );
 
 module.exports = router;

@@ -1,6 +1,10 @@
 require('dotenv').config();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const path = require('path');
+const fs = require('fs/promises');
+const gravatar = require('gravatar');
+const avatarsDir = path.join(__dirname, "../", "public", "avatars");
 
 const { User } = require("../models/user.js");
 const { HttpError, ctrlWrapper } = require("../helpers");
@@ -15,8 +19,9 @@ const register = async (req, res) => {
 	}
 
 	const hashPassword = await bcrypt.hash(password, 10);
+	const avatarURL = gravatar.url(email);
 
-	const newUser = await User.create({ ...req.body, password: hashPassword });
+	const newUser = await User.create({...req.body, password: hashPassword, avatarURL});
 
 	res.status(201).json({
 		user: {
@@ -84,10 +89,24 @@ const updateSubscriptionUser = async (req, res) => {
 	res.json(result);
 };
 
+const changeAvatar = async (req, res, next) => {
+  const { _id } = req.user;
+  const { path: tmpUpload, originalname } = req.file;
+  const filename = `${_id}_${originalname}`;
+
+  const resultUpload = path.join(avatarsDir, filename);
+  await fs.rename(tmpUpload, resultUpload);
+
+  const avatarURL = path.join("avatars", filename);
+  await User.findByIdAndUpdate(_id, { avatarURL });
+  res.json({ avatarURL });
+};
+
 module.exports = {
 	register: ctrlWrapper(register),
 	login: ctrlWrapper(login),
 	getCurrent: ctrlWrapper(getCurrent),
 	logout: ctrlWrapper(logout),
 	updateSubscriptionUser: ctrlWrapper(updateSubscriptionUser),
+	changeAvatar: ctrlWrapper(changeAvatar),
 };
