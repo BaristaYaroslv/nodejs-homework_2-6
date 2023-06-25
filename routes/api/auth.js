@@ -31,8 +31,8 @@ router.patch(
 router.patch(
   "/avatars",
 	authenticate,
+	upload.single("avatar"),
   validateFile(),
-  upload.single("avatar"),
   ctrl.changeAvatar
 );
 
