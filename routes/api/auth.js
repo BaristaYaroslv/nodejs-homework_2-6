@@ -4,7 +4,6 @@ const {
 	validateBody,
 	authenticate,
 	upload,
-	resizeAvatar,
 	validateFile,
 	isValidId,
 } = require("../../middleWares");
@@ -31,10 +30,9 @@ router.patch(
 
 router.patch(
   "/avatars",
-  authenticate,
-  upload.single("avatar"),
+	authenticate,
   validateFile(),
-  resizeAvatar,
+  upload.single("avatar"),
   ctrl.changeAvatar
 );
 

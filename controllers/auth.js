@@ -4,7 +4,8 @@ const jwt = require("jsonwebtoken");
 const path = require('path');
 const fs = require('fs/promises');
 const gravatar = require('gravatar');
-const avatarsDir = path.resolve("public", "avatars");
+const avatarDir = path.resolve("public", "avatars");
+const Jimp = require("jimp");
 
 const { User } = require("../models/user.js");
 const { HttpError, ctrlWrapper } = require("../helpers");
@@ -89,20 +90,23 @@ const updateSubscriptionUser = async (req, res) => {
 	res.json(result);
 };
 
-const changeAvatar = async (req, res, next) => {
+const changeAvatar = async (req, res) => {
   const { _id } = req.user;
+  
   const { path: oldPath, originalname } = req.file;
   const filename = `${_id}_${originalname}`;
 
-  const resultUpload = path.join(avatarsDir, filename);
-  await fs.rename(oldPath, resultUpload);
+  const resultUpload = path.join(avatarDir, filename);
+    await fs.rename(oldPath, resultUpload);
 
   const avatarURL = path.join("avatars", filename);
-    await User.findByIdAndUpdate(_id, { avatarURL });
 
+  const image = await Jimp.read(resultUpload);
+    await image.resize(250, 250).writeAsync(resultUpload);
+
+	await User.findByIdAndUpdate(_id, { avatarURL });
 	await fs.unlink(oldPath);
-
-	res.json({ avatarURL });
+  res.json({ avatarURL });
 };
 
 module.exports = {
