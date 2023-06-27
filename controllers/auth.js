@@ -6,11 +6,12 @@ const fs = require('fs/promises');
 const gravatar = require('gravatar');
 const avatarDir = path.resolve("public", "avatars");
 const Jimp = require("jimp");
+const { nanoid } = require("nanoid");
 
 const { User } = require("../models/user.js");
-const { HttpError, ctrlWrapper } = require("../helpers");
+const { HttpError, ctrlWrapper, sendEmail } = require("../helpers");
 
-const { SECRET_KEY } = process.env;
+const { SECRET_KEY, BASE_URL } = process.env;
 
 const register = async (req, res) => {
 	const { email, password } = req.body;
@@ -21,9 +22,18 @@ const register = async (req, res) => {
 
 	const hashPassword = await bcrypt.hash(password, 10);
 	const avatarURL = gravatar.url(email);
+	const verificationToken = nanoid();
 
-	const newUser = await User.create({...req.body, password: hashPassword, avatarURL});
+	const newUser = await User.create({...req.body, password: hashPassword, avatarURL,verificationToken});
 
+	const verifyEmail = {
+    to: email,
+    subject: "Verify email",
+    html: `<a target="_blank" href="${BASE_URL}/api/auth/verify/${verificationToken}">Click to verify email</a>`,
+  };
+
+	await sendEmail(verifyEmail);
+	
 	res.status(201).json({
 		user: {
 			email: newUser.email,
@@ -57,6 +67,43 @@ const login = async (req, res) => {
 			subscription: user.subscription,
 		},
 	});
+};
+const verify = async (req, res) => {
+  const { verificationToken } = req.params;
+  const user = await User.findOne({ verificationToken });
+  if (!user) {
+    throw HttpError(401, "Email not found");
+  }
+  await User.findByIdAndUpdate(user._id, {
+    verify: true,
+    verificationToken: "",
+  });
+
+  res.json({
+    message: "Email verify success",
+  });
+};
+const resendVerify = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw HttpError(401, "Email not found");
+  }
+  if (user.verify) {
+    throw HttpError(400, "Email already verify");
+  }
+
+  const verify = {
+    to: email,
+    subject: "Verify email",
+    html: `<a target="_blank" href="${BASE_URL}/api/auth/verify/${user.verificationToken}">Click to verify email</a>`,
+  };
+
+  await sendEmail(verify);
+
+  res.json({
+    message: "Verify email send success",
+  });
 };
 
 const getCurrent = async (req, res) => {
@@ -117,4 +164,6 @@ module.exports = {
 	logout: ctrlWrapper(logout),
 	updateSubscriptionUser: ctrlWrapper(updateSubscriptionUser),
 	changeAvatar: ctrlWrapper(changeAvatar),
+	resendVerify: ctrlWrapper(resendVerify),
+	verify: ctrlWrapper(verify),
 };
