@@ -50,6 +50,10 @@ const login = async (req, res) => {
 		throw HttpError(401, "Email or password is wrong");
 	}
 
+	if (!user.verify) {
+		throw HttpError(401, "Unauthorized");
+	}
+
 	const passCompare = await bcrypt.compare(password, user.password);
 	if (!passCompare) {
 		throw HttpError(401, "Email or password is wrong");
@@ -80,7 +84,7 @@ const verify = async (req, res) => {
   });
 
   res.json({
-    message: "Email verify success",
+    message: "Verification successful",
   });
 };
 const resendVerify = async (req, res) => {
@@ -90,19 +94,19 @@ const resendVerify = async (req, res) => {
     throw HttpError(401, "Email not found");
   }
   if (user.verify) {
-    throw HttpError(400, "Email already verify");
+    throw HttpError(400, "Verification has already been passed");
   }
 
-  const verify = {
+  const verifyEm = {
     to: email,
     subject: "Verify email",
     html: `<a target="_blank" href="${BASE_URL}/api/auth/verify/${user.verificationToken}">Click to verify email</a>`,
   };
 
-  await sendEmail(verify);
+  await sendEmail(verifyEm);
 
   res.json({
-    message: "Verify email send success",
+    message: "Verification email sent",
   });
 };
 
