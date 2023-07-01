@@ -29,7 +29,7 @@ const register = async (req, res) => {
 	const verifyEmail = {
     to: email,
     subject: "Verify email",
-    html: `<a target="_blank" href="${BASE_URL}/api/auth/verify/${verificationToken}">Click to verify email</a>`,
+    html: `<a target="_blank" href="${BASE_URL}/users/verify/${verificationToken}">Click to verify email</a>`,
   };
 
 	await sendEmail(verifyEmail);
@@ -94,13 +94,13 @@ const resendVerify = async (req, res) => {
     throw HttpError(401, "Email not found");
   }
   if (user.verify) {
-    throw HttpError(400, "Verification has already been passed");
+	res.status(400).json({message: "Verification has already been passed"});
   }
 
   const verifyEm = {
     to: email,
     subject: "Verify email",
-    html: `<a target="_blank" href="${BASE_URL}/api/auth/verify/${user.verificationToken}">Click to verify email</a>`,
+    html: `<a target="_blank" href="${BASE_URL}/users/verify/${user.verificationToken}">Click to verify email</a>`,
   };
 
   await sendEmail(verifyEm);
@@ -118,9 +118,7 @@ const getCurrent = async (req, res) => {
 const logout = async (req, res) => {
 	const { _id } = req.user;
 	await User.findByIdAndUpdate(_id, { token: "" });
-	    res.status(204).json({
-        message: "Logout success"
-    })
+	res.status(204).json({ message: "Logout success" });
 };
 
 const updateSubscriptionUser = async (req, res) => {
