@@ -52,21 +52,25 @@ const userSchema = new Schema(
 userSchema.post("save", handleMongooseError);
 const User = model("user", userSchema);
 
+const customMessages = {
+  'string.pattern.base': '<Ошибка от Joi или другой библиотеки валидации>'
+};
+
 const registerSchema = Joi.object({
 	name: Joi.string(),
 	email: Joi.string().pattern(emailRageXP).required(),
 	password: Joi.string().min(6).required(),
 	subscription: Joi.string()
-});
+}).messages(customMessages);
 
 const loginSchema = Joi.object({
 	email: Joi.string().pattern(emailRageXP).required(),
 	password: Joi.string().min(6).required(),
-});
+}).messages(customMessages);
 
 const emailSchema = Joi.object({
 	email: Joi.string().pattern(emailRageXP).required(),
-});
+}).messages(customMessages);
 
 const updateSubscriptionSchema = Joi.object({
 	subscription: Joi.string().valid(...subscriptionTypes).required()
